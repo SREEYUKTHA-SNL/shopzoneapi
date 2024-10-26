@@ -15,8 +15,8 @@ class Registration(models.Model):
     role=models.CharField(max_length=50)
 
 class Category(models.Model):
-    categoryname = models.CharField(max_length=10)
-    category_image = models.ImageField()
+    categoryname = models.CharField(max_length=20)
+ 
 
     def __str__(self):
         return self.categoryname
@@ -24,7 +24,7 @@ class Category(models.Model):
 class Subcategory(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     subcategoryname = models.CharField(max_length=20)
-    subcategory_image = models.ImageField()
+    subcategory_image = models.URLField(max_length=200)
 
     def __str__(self):
         return self.subcategoryname

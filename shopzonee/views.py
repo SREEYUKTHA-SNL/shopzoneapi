@@ -186,9 +186,9 @@ class addcategory_api(GenericAPIView):
     def post(self,request):
         categoryname=request.data.get('categoryname')
         
-        category_image=request.data.get('category_image')
+       
         
-        serializer=self.serializer_class(data={'categoryname':categoryname,'category_image':category_image})
+        serializer=self.serializer_class(data={'categoryname':categoryname})
         if serializer.is_valid():
             serializer.save()
             return Response({'data':serializer.data ,'message':'product added successfully','success':1},status=status.HTTP_200_OK) 
@@ -236,19 +236,26 @@ class updatecategory_api(GenericAPIView):
             serializer.save()
         return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
     
+cloudinary.config(cloud_name='dws6st29l',api_key='912175176892196',api_secret='M_eH-684kf_g23lG89QOgt2twXM')
 
 class addsubcategory_api(GenericAPIView):
     serializer_class=SubCategorySerializer
     def post(self,request):
         subcategoryname=request.data.get('subcategoryname')
         
-        subcategory_image=request.data.get('subcategory_image')
+        subcategory_image=request.FILES.get('subcategory_image')
         category_id=request.data.get('category_id')
-        serializer=self.serializer_class(data={'subcategoryname':subcategoryname,'subcategory_image':subcategory_image,'category_id':category_id})
-        if serializer.is_valid():
-            serializer.save()
+        if not subcategory_image:
+            return Response({'message':'failed','success':0},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            upload_data=cloudinary.uploader.upload(subcategory_image)
+            image_url=upload_data['url']
+            serializer=self.serializer_class(data={'subcategoryname':subcategoryname,'subcategory_image':image_url,'category_id':category_id})
+            if serializer.is_valid():
+                 serializer.save()
             return Response({'data':serializer.data ,'message':'product added successfully','success':1},status=status.HTTP_200_OK) 
-        return Response({'data':serializer.errors,'message':'failed','success':0},status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'message': 'An error occurred: {}'.format(str(e)), 'success': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class viewsubcategory_api(GenericAPIView):
