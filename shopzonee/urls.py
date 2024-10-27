@@ -13,7 +13,7 @@ urlpatterns = [
    path('updateusers/<int:id>',views.updateusers_api.as_view(),name='updateusers'),
 
 
-   path('addproductview/',views.addproductview_api.as_view(),name='addproductview'),
+   path('addproduct/',views.addproductview_api.as_view(),name='addproductview'),
    path('viewproduct/',views.viewproduct_api.as_view(),name='viewproduct'),
    path('viewsingleproduct/<int:id>',views.viewsingleproduct_api.as_view(),name='viewsingleproduct'),
    path('deleteproduct/<int:id>',views.deleteproduct_api.as_view(),name='deleteproduct'),
@@ -27,8 +27,8 @@ urlpatterns = [
 
    path('addsubcategory/',views.addsubcategory_api.as_view(),name='addsubcategory'),
    path('viewsubcategory/',views.viewsubcategory_api.as_view(),name='viewsubcategory'),
-   path('viewsinglesubcategory/<int:subcategory_id>', views.viewsinglesubcategory_api.as_view(), name='viewsinglesubcategory'),
-   path('updatesubcategory/<int:subcategory_id>',views.updatesubcategory_api.as_view(),name='updatesubcategory'),
+   path('viewsinglesubcategory/<int:subcategory_id>/', views.viewsinglesubcategory_api.as_view(), name='view_single_subcategory'),
+   path('updatesubcategory/<int:id>',views.updatesubcategory_api.as_view(),name='updatesubcategory'),
 
 
    path('review/',views.review_api.as_view(),name='review'),

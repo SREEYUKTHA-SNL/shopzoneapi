@@ -139,7 +139,7 @@ class addproductview_api(GenericAPIView):
         try:
             upload_data=cloudinary.uploader.upload(image)
             image_url=upload_data['url']
-            serializer=self.serializer_class(data={'productname':productname,'image':image_url,'price':price,'category':category_id,'color':color,'description':description,'size':size,'subcategory':category_id})
+            serializer=self.serializer_class(data={'productname':productname,'image':image_url,'price':price,'category':category_id,'color':color,'description':description,'size':size,'subcategory':subcategory_id})
             if serializer.is_valid():
                 serializer.save()
                 return Response({'data':serializer.data ,'message':'product added successfully','success':1},status=status.HTTP_200_OK) 
@@ -238,24 +238,24 @@ class updatecategory_api(GenericAPIView):
     
 cloudinary.config(cloud_name='dws6st29l',api_key='912175176892196',api_secret='M_eH-684kf_g23lG89QOgt2twXM')
 
-class addsubcategory_api(GenericAPIView):
-    serializer_class=SubCategorySerializer
-    def post(self,request):
-        subcategoryname=request.data.get('subcategoryname')
+# class addsubcategory_api(GenericAPIView):
+#     serializer_class=SubCategorySerializer
+#     def post(self,request):
+#         subcategoryname=request.data.get('subcategoryname')
         
-        subcategory_image=request.FILES.get('subcategory_image')
-        category_id=request.data.get('category_id')
-        if not subcategory_image:
-            return Response({'message':'failed','success':0},status=status.HTTP_400_BAD_REQUEST)
-        try:
-            upload_data=cloudinary.uploader.upload(subcategory_image)
-            image_url=upload_data['url']
-            serializer=self.serializer_class(data={'subcategoryname':subcategoryname,'subcategory_image':image_url,'category_id':category_id})
-            if serializer.is_valid():
-                 serializer.save()
-            return Response({'data':serializer.data ,'message':'product added successfully','success':1},status=status.HTTP_200_OK) 
-        except Exception as e:
-            return Response({'message': 'An error occurred: {}'.format(str(e)), 'success': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         subcategory_image=request.FILES.get('subcategory_image')
+#         category_id=request.data.get('category_id')
+#         if not subcategory_image:
+#             return Response({'message':'failed','success':0},status=status.HTTP_400_BAD_REQUEST)
+#         try:
+#             upload_data=cloudinary.uploader.upload(subcategory_image)
+#             image_url=upload_data['url']
+#             serializer=self.serializer_class(data={'subcategoryname':subcategoryname,'subcategory_image':image_url,'category_id':category_id})
+#             if serializer.is_valid():
+#                  serializer.save()
+#             return Response({'data':serializer.data ,'message':'product added successfully','success':1},status=status.HTTP_200_OK) 
+#         except Exception as e:
+#             return Response({'message': 'An error occurred: {}'.format(str(e)), 'success': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class viewsubcategory_api(GenericAPIView):
@@ -268,10 +268,77 @@ class viewsubcategory_api(GenericAPIView):
         return Response({'data':'no data available'},status=status.HTTP_400_BAD_REQUEST)   
         
 
+# class viewsinglesubcategory_api(GenericAPIView):
+#     serializer_class = SubCategorySerializer
+
+#     def get(self, request, subcategory_id=None):
+#         try:
+#             subcategory = Subcategory.objects.get(id=subcategory_id)
+#             products = Product.objects.filter(subcategory=subcategory)
+
+#             subcategory_serializer = self.get_serializer(subcategory)
+#             product_serializer = ProductSerializer(products, many=True)
+
+#             return Response({
+#                 'subcategory': subcategory_serializer.data,
+#                 'products': product_serializer.data,
+#                 'message': 'Data retrieved successfully',
+#                 'success': True
+#             }, status=status.HTTP_200_OK)
+
+#         except Subcategory.DoesNotExist:
+#             return Response({
+#                 'data': 'Subcategory not found',
+#                 'success': False
+#             }, status=status.HTTP_404_NOT_FOUND)
+#         except Exception as e:
+#             return Response({
+#                 'data': str(e),
+#                 'success': False
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+    
+
+class addsubcategory_api(GenericAPIView):
+    serializer_class = SubCategorySerializer
+
+    def post(self, request):
+        subcategory_name = request.data.get('subcategoryname')
+        subcategory_image = request.FILES.get('subcategory_image')
+        category_id = request.data.get('category_id')
+
+        if not subcategory_name or not category_id:
+            return Response({'message': 'subcategoryname and category_id are required', 'success': 0}, status=status.HTTP_400_BAD_REQUEST)
+        if not subcategory_image:
+            return Response({'message': 'subcategory_image is required', 'success': 0}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            upload_data = cloudinary.uploader.upload(subcategory_image)
+            image_url = upload_data['url']
+
+            serializer = self.serializer_class(data={
+                'subcategoryname': subcategory_name,
+                'subcategory_image': image_url,
+                'category_id': category_id
+            })
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'data': serializer.data, 'message': 'Subcategory added successfully', 'success': 1}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'message': 'Invalid data', 'errors': serializer.errors, 'success': 0}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'message': f'An error occurred: {str(e)}', 'success': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class viewsinglesubcategory_api(GenericAPIView):
     serializer_class = SubCategorySerializer
 
     def get(self, request, subcategory_id=None):
+        if not subcategory_id:
+            return Response({'message': 'subcategory_id is required', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             subcategory = Subcategory.objects.get(id=subcategory_id)
             products = Product.objects.filter(subcategory=subcategory)
@@ -287,17 +354,10 @@ class viewsinglesubcategory_api(GenericAPIView):
             }, status=status.HTTP_200_OK)
 
         except Subcategory.DoesNotExist:
-            return Response({
-                'data': 'Subcategory not found',
-                'success': False
-            }, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Subcategory not found', 'success': False}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({
-                'data': str(e),
-                'success': False
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': f'An error occurred: {str(e)}', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
-    
 
 class deletesubcategory_api(GenericAPIView):
     serializer_class=SubCategorySerializer
@@ -307,15 +367,39 @@ class deletesubcategory_api(GenericAPIView):
         return Response({'message':'user deleted','success':True},status=status.HTTP_200_OK)
 
 class updatesubcategory_api(GenericAPIView):
-    serializer_class=SubCategorySerializer
-    def put(self,request,subcategory_id):
-        user=Subcategory.objects.get(pk=subcategory_id)
-        print(user)
-        serializer=SubCategorySerializer(instance=user,data=request.data,partial=True)
-        print(serializer)
-        if serializer.is_valid():
-            serializer.save()
-        return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
+    serializer_class = SubCategorySerializer
+
+    def put(self, request, id):
+        try:
+            # Try to get the subcategory by ID
+            user = Subcategory.objects.get(pk=id)
+            
+            # Check if there's a new image being uploaded
+            subcategory_image = request.FILES.get('subcategory_image')
+            if subcategory_image:
+                # Upload the new image to Cloudinary
+                upload_data = cloudinary.uploader.upload(subcategory_image)
+                image_url = upload_data['url']
+                
+                # Update the request data with the new image URL
+                request.data['subcategory_image'] = image_url
+
+            # Attempt to serialize and update the subcategory data
+            serializer = SubCategorySerializer(instance=user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'data': serializer.data, 'message': 'updated successfully', 'success': 1}, status=status.HTTP_200_OK)
+            else:
+                # Return an error if the serializer is not valid
+                return Response({'message': 'Invalid data', 'errors': serializer.errors, 'success': 0}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Subcategory.DoesNotExist:
+            # Handle the case where the subcategory does not exist
+            return Response({'message': 'Subcategory not found', 'success': 0}, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            # Handle any other exceptions
+            return Response({'message': f'An error occurred: {str(e)}', 'success': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class review_api(GenericAPIView):
