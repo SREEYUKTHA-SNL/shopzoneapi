@@ -308,8 +308,8 @@ class deletesubcategory_api(GenericAPIView):
 
 class updatesubcategory_api(GenericAPIView):
     serializer_class=SubCategorySerializer
-    def put(self,request,id):
-        user=Subcategory.objects.get(pk=id)
+    def put(self,request,subcategory_id):
+        user=Subcategory.objects.get(pk=subcategory_id)
         print(user)
         serializer=SubCategorySerializer(instance=user,data=request.data,partial=True)
         print(serializer)

@@ -28,7 +28,7 @@ urlpatterns = [
    path('addsubcategory/',views.addsubcategory_api.as_view(),name='addsubcategory'),
    path('viewsubcategory/',views.viewsubcategory_api.as_view(),name='viewsubcategory'),
    path('viewsinglesubcategory/<int:subcategory_id>', views.viewsinglesubcategory_api.as_view(), name='viewsinglesubcategory'),
-   path('updatesubcategory/<int:id>',views.updatesubcategory_api.as_view(),name='updatesubcategory'),
+   path('updatesubcategory/<int:subcategory_id>',views.updatesubcategory_api.as_view(),name='updatesubcategory'),
 
 
    path('review/',views.review_api.as_view(),name='review'),
