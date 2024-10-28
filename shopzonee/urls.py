@@ -44,6 +44,8 @@ urlpatterns = [
    path('deletercart/<int:id>',views.deletecart_api.as_view(),name='deletecart'),
 
    path('addwishlist/',views.addwishlist_api.as_view(),name='addwishlist'),
+   path('viewwishlist/',views.viewwishlist_api.as_view(),name='viewwishlist'),
+
 
    path('order/<int:userid>',views.order_api.as_view(),name='order'),
    path('OrderViewApi/<int:userid>',views.OrderViewApi.as_view(),name='OrderViewApi'),
