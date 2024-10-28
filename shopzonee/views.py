@@ -559,6 +559,7 @@ class addwishlist_api(GenericAPIView):
             return Response({'data': serializer.data, 'message': 'added to wishlist successfully', 'success': 1}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class viewwishlist_api(GenericAPIView):
     serializer_class=WishlistSerializer
     def get(self,request):
