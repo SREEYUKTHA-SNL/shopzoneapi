@@ -64,7 +64,7 @@ class Wishlist(models.Model):
     userid = models.CharField(max_length=20, default="userid")
     wishlist_status=models.CharField(max_length=50)
     price=models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images')
+    image = models.URLField(max_length=200)
 class Order(models.Model):
     productid = models.CharField(max_length=20, default="id")
     productname = models.CharField(max_length=20, default="productname")
