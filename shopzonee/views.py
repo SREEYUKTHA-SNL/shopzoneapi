@@ -564,10 +564,11 @@ class viewwishlist_api(GenericAPIView):
     serializer_class=WishlistSerializer
     def get(self,request):
         user=Wishlist.objects.all()
+        print(user)
         if (user.count()>0):
             serializer=WishlistSerializer(user,many=True)
             return Response({'data':serializer.data,'message':'data get','success':True},status=status.HTTP_200_OK)
-        return Response({'data':'no data available'},status=status.HTTP_400_BAD_REQUEST)
+        return Response({'data':[]},status=status.HTTP_200_OK)
 
 class order_api(GenericAPIView):
     serializer_class = OrderSerializer
