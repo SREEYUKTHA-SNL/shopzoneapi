@@ -259,21 +259,13 @@ cloudinary.config(cloud_name='dws6st29l',api_key='912175176892196',api_secret='M
 
 
 class viewsubcategory_api(GenericAPIView):
-    serializer_class = SubCategorySerializer
-
-    def get(self, request):
-        category_id = request.query_params.get('category_id', None)
-        if category_id:
-            user = Subcategory.objects.filter(category_id=category_id)
-        else:
-            user = Subcategory.objects.all()
-        
-        if user.exists():
-            serializer = SubCategorySerializer(user, many=True)
-            return Response({'data': serializer.data, 'message': 'Data retrieved successfully', 'success': True}, status=status.HTTP_200_OK)
-        
-        return Response({'data': 'No data available'}, status=status.HTTP_400_BAD_REQUEST)
-
+    serializer_class=SubCategorySerializer
+    def get(self,request):
+        user=Subcategory.objects.all()
+        if (user.count()>0):
+            serializer=SubCategorySerializer(user,many=True)
+            return Response({'data':serializer.data,'message':'data get','success':True},status=status.HTTP_200_OK)
+        return Response({'data':'no data available'},status=status.HTTP_400_BAD_REQUEST)   
         
 
 # class viewsinglesubcategory_api(GenericAPIView):
