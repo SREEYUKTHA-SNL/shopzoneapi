@@ -220,8 +220,8 @@ class viewsinglecategory_api(GenericAPIView):
 
 class deletecategory_api(GenericAPIView):
     serializer_class=CategorySerializer
-    def delete(self,request,id):
-        user=Category.objects.get(pk=id)
+    def delete(self,request,category_id):
+        user=Category.objects.get(pk=category_id)
         user.delete()
         return Response({'message':'user deleted','success':True},status=status.HTTP_200_OK)
 

@@ -22,7 +22,7 @@ urlpatterns = [
 
    path('addcategory/',views.addcategory_api.as_view(),name='addcategory'),
    path('viewcategory/',views.viewcategory_api.as_view(),name='viewcategory'),
-   path('deletecategory/<int:id>',views.viewcategory_api.as_view(),name='viewcategory'),
+   path('deletecategory/<category_id>',views.viewcategory_api.as_view(),name='viewcategory'),
 
    path('viewsinglecategory/<int:category_id>',views.viewsinglecategory_api.as_view(),name='viewsinglecategory'),
    path('updatecategory/<int:id>',views.updatecategory_api.as_view(),name='updatecategory'),
