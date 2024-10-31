@@ -717,5 +717,27 @@ class changepassword_api(GenericAPIView):
                 return Response({'message':'no password provided'}, status = status.HTTP_400_BAD_REQUEST)
         
         return Response({'message':'password updated failed'}, status = status.HTTP_400_BAD_REQUEST)
+
+class viewproductsbycatsubcat_api(GenericAPIView):
+    serializer_class = ProductSerializer
+
+    def get(self, request):
+        category_id = request.query_params.get('category_id')
+        subcategory_id = request.query_params.get('subcategory_id')
+
+        products = Product.objects.all()
+
+        if category_id:
+            products = products.filter(category=category_id)
+
+        if subcategory_id:
+            products = products.filter(subcategory=subcategory_id)
+
+        if products.exists():
+            serializer = self.serializer_class(products, many=True)
+            return Response({'data': serializer.data, 'message': 'Products retrieved successfully', 'success': True}, status=status.HTTP_200_OK)
+        
+        return Response({'data': 'No products available', 'success': False}, status=status.HTTP_404_NOT_FOUND)
+
     
          

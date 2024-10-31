@@ -61,5 +61,10 @@ urlpatterns = [
    
    path('search/',views.search_api.as_view(),name='search'),
    path('changepassword/<int:id>',views.changepassword_api.as_view(),name='changepassword'),
+
+   path('viewproductsbycatsubcat/',views.viewproductsbycatsubcat_api.as_view(),name='viewproductsbycatsubcat'),
+
+
+
   
 ]
