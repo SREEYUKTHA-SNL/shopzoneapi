@@ -738,6 +738,26 @@ class viewproductsbycatsubcat_api(GenericAPIView):
             return Response({'data': serializer.data, 'message': 'Products retrieved successfully', 'success': True}, status=status.HTTP_200_OK)
         
         return Response({'data': 'No products available', 'success': False}, status=status.HTTP_404_NOT_FOUND)
+class viewsubcategoriesbycategory_api(GenericAPIView):
+    serializer_class = SubCategorySerializer
+
+    def get(self, request, category_id):
+        # Filter subcategories by the provided category_id
+        subcategories = Subcategory.objects.filter(category_id=category_id)
+        
+        if subcategories.exists():
+            serializer = self.serializer_class(subcategories, many=True)
+            return Response({
+                'data': serializer.data,
+                'message': 'Subcategories retrieved successfully',
+                'success': True
+            }, status=status.HTTP_200_OK)
+        
+        return Response({
+            'data': 'No subcategories available for this category',
+            'success': False
+        }, status=status.HTTP_404_NOT_FOUND)
+
 
     
          

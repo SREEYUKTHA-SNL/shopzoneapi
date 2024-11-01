@@ -63,6 +63,7 @@ urlpatterns = [
    path('changepassword/<int:id>',views.changepassword_api.as_view(),name='changepassword'),
 
    path('viewproductsbycatsubcat/',views.viewproductsbycatsubcat_api.as_view(),name='viewproductsbycatsubcat'),
+   path('view-subcategories/category/<int:category_id>/', views.viewsubcategoriesbycategory_api.as_view(), name='view-subcategories-by-category')
 
 
 
