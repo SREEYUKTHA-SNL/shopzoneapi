@@ -371,20 +371,20 @@ class updatesubcategory_api(GenericAPIView):
 
     def put(self, request, id):
         try:
-            # Try to get the subcategory by ID
+       
             user = Subcategory.objects.get(pk=id)
             
-            # Check if there's a new image being uploaded
+          
             subcategory_image = request.FILES.get('subcategory_image')
             if subcategory_image:
-                # Upload the new image to Cloudinary
+              
                 upload_data = cloudinary.uploader.upload(subcategory_image)
                 image_url = upload_data['url']
                 
-                # Update the request data with the new image URL
+             
                 request.data['subcategory_image'] = image_url
 
-            # Attempt to serialize and update the subcategory data
+           
             serializer = SubCategorySerializer(instance=user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -669,14 +669,15 @@ class search_api(GenericAPIView):
         search_query = request.data.get('search_query', '')
         if search_query:
         
-            products = Product.objects.filter(Q(productname__exact=search_query))
+            products = Product.objects.filter(Q(productname__icontains=search_query))
             if not products:
                 return Response({'message': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
             
             serializer = self.serializer_class(products, many=True)
             for product in serializer.data:
                 if product['image']:
-                    product['image'] = settings.MEDIA_URL + product['image']
+                    image_path = product['image'].lstrip('/')
+                    product['image'] = settings.MEDIA_URL + image_path
             
             return Response({'data': serializer.data, 'message': 'Image fetched successfully'}, status=status.HTTP_200_OK)
         
