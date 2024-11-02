@@ -665,7 +665,7 @@ class updateaddress_api(GenericAPIView):
 
 
 
-class SearchAPI(GenericAPIView):
+class search_api(GenericAPIView):
     serializer_class = ProductSerializer
 
     def post(self, request):
