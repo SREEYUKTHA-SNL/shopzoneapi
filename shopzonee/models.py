@@ -56,7 +56,7 @@ class Cart(models.Model):
     description=models.CharField(max_length=100,null=True)
 
     price=models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images')
+    image = models.URLField(max_length=200)
     
 class Wishlist(models.Model):
     productid = models.CharField(max_length=20, default="id")
