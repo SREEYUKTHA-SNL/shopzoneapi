@@ -663,40 +663,50 @@ class updateaddress_api(GenericAPIView):
             return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
         
 
-class search_api(GenericAPIView):
+
+
+class SearchAPI(GenericAPIView):
     serializer_class = ProductSerializer
 
     def post(self, request):
-        search_query = request.data.get('search_query', '')
-        if search_query:
+        search_query = request.data.get('search_query', '').strip()
         
-            products = Product.objects.filter(Q(productname__exact=search_query))
-            if not products:
-                return Response({'message': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
-            
-            serializer = self.serializer_class(products, many=True)
-            for product in serializer.data:
-                if product['image']:
-                    product['image'] = settings.MEDIA_URL + product['image']
-            
-            return Response({'data': serializer.data, 'message': 'Image fetched successfully'}, status=status.HTTP_200_OK)
-        
-        return Response({'message': 'No query found'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    def get(self, request):
-     search_query = request.query_params.get('search_query', '')
-     if search_query:
-        products = Product.objects.filter(
-            Q(productname__icontains=search_query) 
-        ).values('productname').distinct()[:10] 
-        
-        if not products.exists(): 
-              return Response({'Message': 'no suggestions found'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if search query is provided
+        if not search_query:
+            return Response({'message': 'No query found'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Search for products with exact match
+        products = Product.objects.filter(Q(productname__iexact=search_query))
+        if not products.exists():
+            return Response({'message': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize and append media URL for images
+        serializer = self.serializer_class(products, many=True)
+        for product in serializer.data:
+            if product.get('image'):
+                product['image'] = settings.MEDIA_URL + product['image']
+
+        return Response({'data': serializer.data, 'message': 'Image fetched successfully'}, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        search_query = request.query_params.get('search_query', '').strip()
+        
+        if not search_query:
+            return Response({'error': 'No search query provided', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Perform case-insensitive search and get distinct product names
+        products = Product.objects.filter(
+            Q(productname__icontains=search_query)
+        ).values('productname').distinct()[:10]
+
+        if not products.exists():
+            return Response({'message': 'No suggestions found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create suggestion list
         suggestion_list = [{'product_name': product['productname']} for product in products]
         
-        return Response({'suggestion': suggestion_list, 'message': 'suggestions fetched successfully', 'success': True}, status=status.HTTP_200_OK)
-     return Response({'error': 'no search query provided', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'suggestion': suggestion_list, 'message': 'Suggestions fetched successfully', 'success': True}, status=status.HTTP_200_OK)
+
     
 
 class changepassword_api(GenericAPIView):
@@ -717,6 +727,8 @@ class changepassword_api(GenericAPIView):
                 return Response({'message':'no password provided'}, status = status.HTTP_400_BAD_REQUEST)
         
         return Response({'message':'password updated failed'}, status = status.HTTP_400_BAD_REQUEST)
+    
+
 
 class viewproductsbycatsubcat_api(GenericAPIView):
     serializer_class = ProductSerializer
@@ -738,6 +750,9 @@ class viewproductsbycatsubcat_api(GenericAPIView):
             return Response({'data': serializer.data, 'message': 'Products retrieved successfully', 'success': True}, status=status.HTTP_200_OK)
         
         return Response({'data': 'No products available', 'success': False}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
 class viewsubcategoriesbycategory_api(GenericAPIView):
     serializer_class = SubCategorySerializer
 
