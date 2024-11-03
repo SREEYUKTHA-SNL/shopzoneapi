@@ -662,41 +662,47 @@ class updateaddress_api(GenericAPIView):
             return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
         
 
+
+from urllib.parse import urljoin
+
 class search_api(GenericAPIView):
     serializer_class = ProductSerializer
 
     def post(self, request):
         search_query = request.data.get('search_query', '')
         if search_query:
-        
             products = Product.objects.filter(Q(productname__icontains=search_query))
             if not products:
                 return Response({'message': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
             
             serializer = self.serializer_class(products, many=True)
+            
+            # Ensure image URLs are correctly formatted
             for product in serializer.data:
                 if product['image']:
-                    image_path = product['image'].lstrip('/')
-                    product['image'] = settings.MEDIA_URL + image_path
+                    # Only prepend MEDIA_URL if it's not a full URL
+                    if not product['image'].startswith("http"):
+                        product['image'] = urljoin(settings.MEDIA_URL, product['image'].lstrip('/'))
             
             return Response({'data': serializer.data, 'message': 'Image fetched successfully'}, status=status.HTTP_200_OK)
         
         return Response({'message': 'No query found'}, status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
-     search_query = request.query_params.get('search_query', '')
-     if search_query:
-        products = Product.objects.filter( 
-            Q(productname__icontains=search_query) 
-        ).values('productname').distinct()[:10] 
-        
-        if not products.exists(): 
-              return Response({'Message': 'no suggestions found'}, status=status.HTTP_400_BAD_REQUEST)
+        search_query = request.query_params.get('search_query', '')
+        if search_query:
+            products = Product.objects.filter(
+                Q(productname__icontains=search_query)
+            ).values('productname').distinct()[:10]
+            
+            if not products.exists():
+                return Response({'Message': 'No suggestions found'}, status=status.HTTP_400_BAD_REQUEST)
 
-        suggestion_list = [{'product_name': product['productname']} for product in products]
+            suggestion_list = [{'product_name': product['productname']} for product in products]
+            
+            return Response({'suggestion': suggestion_list, 'message': 'Suggestions fetched successfully', 'success': True}, status=status.HTTP_200_OK)
         
-        return Response({'suggestion': suggestion_list, 'message': 'suggestions fetched successfully', 'success': True}, status=status.HTTP_200_OK)
-     return Response({'error': 'no search query provided', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({'error': 'No search query provided', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
     
 
