@@ -462,39 +462,54 @@ class updatereview_api(GenericAPIView):
         return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
 
 class addcart_api(GenericAPIView):
-    serializer_class=CartSerializer
-    def post(self,request):
-        productid=request.data.get('productid')
-        userid=request.data.get('userid')
-        cart_status=1
-        quantity=1
-        cart=Cart.objects.filter(productid=productid,userid=userid)
+    serializer_class = CartSerializer
+
+    def post(self, request):
+        productid = request.data.get('productid')
+        userid = request.data.get('userid')
+        
+        # Check if user exists in Registration model
+        if not Registration.objects.filter(id=userid).exists():
+            return Response({'message': 'User not found', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cart_status = 1
+        quantity = 1
+        cart = Cart.objects.filter(productid=productid, userid=userid)
+        
+        # Check if item is already in cart
         if cart.exists():
-           return Response({'message':'item already exist','success':False},status=status.HTTP_400_BAD_REQUEST)
-        product_data=Product.objects.filter(id=productid).first()
+            return Response({'message': 'Item already exists in cart', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if product exists
+        product_data = Product.objects.filter(id=productid).first()
         if not product_data:
-           return Response({'message':'product not found','success':False},status=status.HTTP_400_BAD_REQUEST)
-        productname=product_data.productname
-        price=product_data.price
-        image=product_data.image
-        description=product_data.description
-        total_price=price*quantity
+            return Response({'message': 'Product not found', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        
+        productname = product_data.productname
+        price = product_data.price
+        image = product_data.image
+        description = product_data.description
+        total_price = price * quantity
         print(total_price)
-        serializer=self.serializer_class(data={
-        'productid':productid,
-        'userid':userid,
-        'productname':productname,
-        'price':price,
-        'description':description,
-        'quantity':quantity,
-        'cart_status':cart_status,
-        'image':image
+        
+        # Prepare and validate serializer
+        serializer = self.serializer_class(data={
+            'productid': productid,
+            'userid': userid,
+            'productname': productname,
+            'price': price,
+            'description': description,
+            'quantity': quantity,
+            'cart_status': cart_status,
+            'image': image
         })
+        
         if serializer.is_valid():
-          serializer.save()
-          return Response({'data': serializer.data, 'message': 'added to cart successfully', 'success': 1}, status=status.HTTP_200_OK)
+            serializer.save()
+            return Response({'data': serializer.data, 'message': 'Added to cart successfully', 'success': 1}, status=status.HTTP_200_OK)
         else:
-          return Response({'data':'failed to add'},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'data': 'Failed to add', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class viewcart_api(GenericAPIView):
     serializer_class=CartSerializer
