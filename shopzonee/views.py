@@ -664,7 +664,16 @@ class deleteaddress_api(GenericAPIView):
         user=Address.objects.get(pk=userid)
         user.delete()
         return Response({'message':'address deleted','success':True},status=status.HTTP_200_OK)
+class viewsingleaddress_api(GenericAPIView):
+    serializer_class = AddressSerializer
 
+    def get(self, request, userid):
+        address_items = Address.objects.filter(userid=userid)
+        if address_items.exists():
+            serializer = AddressSerializer(address_items, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'message': 'No cart items found for the user', 'success': 0}, status=status.HTTP_404_NOT_FOUND)
+    
 class updateaddress_api(GenericAPIView):
     serializer_class=AddressSerializer
     def put(self,request,userid):

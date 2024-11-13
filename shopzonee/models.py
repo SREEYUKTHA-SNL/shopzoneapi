@@ -78,7 +78,7 @@ class Order(models.Model):
     price = models.CharField(max_length=50)
     image = models.ImageField(upload_to='images')
 class Address(models.Model):
-    login_id = models.ForeignKey(Registration,on_delete=models.CASCADE,null=True)
+    userid = models.ForeignKey(Login,on_delete=models.CASCADE,null=True)
     name = models.CharField(max_length=50)
     phonenumber = models.CharField(max_length=50)
     house_no = models.IntegerField()

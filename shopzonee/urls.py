@@ -55,6 +55,8 @@ urlpatterns = [
 
    path('addaddress/',views.addaddress_api.as_view(),name='addaddress'),
    path('viewaddress/',views.viewaddress_api.as_view(),name='viewaddress'),
+   path('viewsingleaddress/<int:userid>',views.viewsingleaddress_api.as_view(),name='viewsingleaddress'),
+
    path('updateaddress/<int:userid>',views.updateaddress_api.as_view(),name='updateaddress'),
    path('deleteaddress/<int:id>',views.deleteaddress_api.as_view(),name='deleteaddress'),
 
