@@ -469,7 +469,7 @@ class addcart_api(GenericAPIView):
         userid = request.data.get('userid')
         
         # Check if user exists in Registration model
-        if not Registration.objects.filter(id=userid).exists():
+        if not Registration.objects.filter(login_id=userid).exists():
             return Response({'message': 'User not found', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
         
         cart_status = 1
@@ -588,7 +588,22 @@ class order_api(GenericAPIView):
     serializer_class = OrderSerializer
 
     def post(self, request, userid):
-        cart_items = Cart.objects.filter(userid=userid, cart_status=1)
+
+        print(userid)
+       
+        cart_ids = request.data.get('cart_ids',[])
+        print(cart_ids)
+        
+        
+        if not cart_ids or not isinstance(cart_ids, list):
+            return Response(
+                {'message': 'Cart ID list is required and should be a list', 'success': 0},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+       
+        cart_items = Cart.objects.filter(userid=userid, id__in=cart_ids, cart_status=1)
+        
         if cart_items.exists():
             orders = []
             for item in cart_items:
@@ -599,27 +614,33 @@ class order_api(GenericAPIView):
                     'userid': item.userid,
                     'price': item.price,
                     'quantity': item.quantity,
-                    
                 }
 
                 
                 serializer = self.serializer_class(data=order_data)
                 if serializer.is_valid():
-                    
-                    serializer.save()
+                    serializer.save() 
                     orders.append(serializer.data)
                 else:
-                    
-                    return Response({'message': 'Order creation failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'message': 'Order creation failed', 'errors': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
            
             cart_items.delete()
 
-            return Response({'data': orders, 'message': 'Order placed successfully', 'success': 1}, status=status.HTTP_200_OK)
+           
+            return Response(
+                {'data': orders, 'message': 'Order placed successfully', 'success': 1},
+                status=status.HTTP_200_OK
+            )
         else:
-            return Response({'message': 'No items in cart', 'success': 0}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'message': 'No matching cart items found', 'success': 0},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    
 
 class OrderViewApi(GenericAPIView):
     serializer_class = OrderSerializer
@@ -658,12 +679,11 @@ class viewaddress_api(GenericAPIView):
             return Response({'data':serializer.data,'message':'data get','success':True},status=status.HTTP_200_OK)
         return Response({'data':'no data available'},status=status.HTTP_400_BAD_REQUEST) 
     
-class deleteaddress_api(GenericAPIView):
-    serializer_class=AddressSerializer
-    def delete(self,request,userid):
-        user=Address.objects.get(pk=userid)
-        user.delete()
-        return Response({'message':'address deleted','success':True},status=status.HTTP_200_OK)
+class DeleteAddress_api(GenericAPIView):
+  def delete(self,request,userid):
+    result=Address.objects.get(pk=userid)
+    result.delete()
+    return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
 class viewsingleaddress_api(GenericAPIView):
     serializer_class = AddressSerializer
 
@@ -674,16 +694,40 @@ class viewsingleaddress_api(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'message': 'No cart items found for the user', 'success': 0}, status=status.HTTP_404_NOT_FOUND)
     
-class updateaddress_api(GenericAPIView):
-    serializer_class=AddressSerializer
-    def put(self,request,userid):
-        user=Address.objects.get(userid=userid)
-        print(user)
-        serializer=AddressSerializer(instance=user,data=request.data,partial=True)
-        print(serializer)
+class UpdateAddressApi(GenericAPIView):
+    serializer_class = AddressSerializer
+
+    def put(self, request, address_id):
+        try:
+      
+            address = Address.objects.get(id=address_id)
+        except Address.DoesNotExist:
+            return Response(
+                {'error': 'Address not found', 'success': False},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+     
+        serializer = AddressSerializer(address, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'data':serializer.data,'message':'updated successfully','success':1},status=status.HTTP_200_OK)
+            serializer.save() 
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Address updated successfully',
+                    'success': True
+                },
+                status=status.HTTP_200_OK
+            )
+
+     
+        return Response(
+            {
+                'error': serializer.errors,
+                'success': False
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
         
 
 
@@ -791,6 +835,75 @@ class viewsubcategoriesbycategory_api(GenericAPIView):
             'data': 'No subcategories available for this category',
             'success': False
         }, status=status.HTTP_404_NOT_FOUND)
+
+class IncrementQuantityAPI(GenericAPIView):
+    serializer_class = CartSerializer
+    queryset = Cart.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        itemid = request.data.get('itemid')
+        userid = request.data.get('userid')
+
+        if not itemid or not userid:
+            return Response(
+                {"error": "itemid and userid are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            cart_item = Cart.objects.get(itemid=itemid, userid=userid)
+            cart_item.quantity += 1
+            cart_item.save()
+
+            # Example of concatenating strings correctly
+            message = "The quantity for item ID " + str(itemid) + " is now " + str(cart_item.quantity)
+            
+            serializer = self.get_serializer(cart_item)
+            return Response({"message": message, "data": serializer.data}, status=status.HTTP_200_OK)
+
+        except Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart item not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+class DecrementQuantityAPI(GenericAPIView):
+    serializer_class = CartSerializer
+    queryset = Cart.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        itemid = request.data.get('itemid')
+        userid = request.data.get('userid')
+
+        if not itemid or not userid:
+            return Response(
+                {"error": "itemid and userid are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            cart_item = Cart.objects.get(itemid=itemid, userid=userid)
+
+            # Decrement quantity, but ensure it does not go below zero
+            new_quantity = int(cart_item.quantity) - 1
+            if new_quantity < 0:
+                new_quantity = 0
+            cart_item.quantity = new_quantity
+            cart_item.save()
+
+            message = "The quantity for item ID " + str(itemid) + " is now " + str(cart_item.quantity)
+            serializer = self.get_serializer(cart_item)
+            return Response({"message": message, "data": serializer.data}, status=status.HTTP_200_OK)
+
+        except Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart item not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except ValueError:
+            return Response(
+                {"error": "Invalid quantity value. Quantity must be an integer."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
     

@@ -76,7 +76,7 @@ class Order(models.Model):
     order_status = models.CharField(max_length=50, default="Pending")
     date = models.DateField(auto_now_add=True)
     price = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images')
+    image = models.URLField(max_length=200)
 class Address(models.Model):
     userid = models.ForeignKey(Login,on_delete=models.CASCADE,null=True)
     name = models.CharField(max_length=50)

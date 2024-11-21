@@ -57,17 +57,20 @@ urlpatterns = [
    path('viewaddress/',views.viewaddress_api.as_view(),name='viewaddress'),
    path('viewsingleaddress/<int:userid>',views.viewsingleaddress_api.as_view(),name='viewsingleaddress'),
 
-   path('updateaddress/<int:userid>',views.updateaddress_api.as_view(),name='updateaddress'),
-   path('deleteaddress/<int:id>',views.deleteaddress_api.as_view(),name='deleteaddress'),
+   path('updateaddress/<int:address_id>/',views.UpdateAddressApi.as_view(), name='update_address'),
+
+     path('deleteaddress/<int:userid>/',views.DeleteAddress_api.as_view(), name='delete-address'),
 
    
    path('search/',views.search_api.as_view(),name='search'),
    path('changepassword/<int:id>',views.changepassword_api.as_view(),name='changepassword'),
 
    path('viewproductsbycatsubcat/',views.viewproductsbycatsubcat_api.as_view(),name='viewproductsbycatsubcat'),
-   path('view-subcategories/category/<int:category_id>/', views.viewsubcategoriesbycategory_api.as_view(), name='view-subcategories-by-category')
+   path('view-subcategories/category/<int:category_id>/', views.viewsubcategoriesbycategory_api.as_view(), name='view-subcategories-by-category'),
+   
+   path('increment_quantity/',views.IncrementQuantityAPI.as_view(), name='increment_quantity'),
+   path('decrement_quantity/',views.DecrementQuantityAPI.as_view(), name='decrement_quantity'),
 
 
-
-  
+   
 ]
